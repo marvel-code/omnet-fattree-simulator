@@ -41,6 +41,7 @@ class Node : public cSimpleModule
     int getIndex();
     NodeTypes getType();
     int getPod();
+    NodeRouter* getRouter();
 };
 
 #endif

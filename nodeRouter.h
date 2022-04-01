@@ -30,9 +30,12 @@ class NodeRouter {
 
 public:
     NodeRouter(Node& node);
-    void setRoute(Packet* pkt, std::string destName, int routeIndex);
-    int getRoutesCount(std::string destName);
+    void setRoute(Packet* pkt, const std::string& destName, int routeIndex);
+    void setCalculatedRoute(Packet* pkt, const std::string& destName);
+    int getRoutesCount(const std::string& destName);
     void sendNext(Packet* pkt);
+    void sendTo(Packet* pkt, const std::string& destName);
+    int calcRouteIndex(Packet* pkt, const std::string& destName);
 };
 
 #endif /* NODEROUTER_H_ */

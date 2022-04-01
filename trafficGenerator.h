@@ -8,21 +8,27 @@
 #ifndef TRAFFICGENERATOR_H_
 #define TRAFFICGENERATOR_H_
 
+#include <map>
+#include <omnetpp.h>
+#include "node.h"
+
+using namespace omnetpp;
 
 class TrafficGenerator {
 
-    int _packetSizeKb;
+    /** Traffic matrix */
     std::map<std::string, std::pair<std::string, int>> _TM;
+    /** Traffic matrix interval in ms */
     simtime_t _interval;
+    /** Packet size in bytes */
+    int _packetSize;
 
     Node& _node;
 
 public:
-    TrafficGenerator(Node& node) : _node{node} {}
-    void launch() {
-
-    }
-
+    TrafficGenerator(Node& node);
+    void launch();
+    void readTM(int index);
 };
 
 #endif /* TRAFFICGENERATOR_H_ */

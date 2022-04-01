@@ -1,0 +1,34 @@
+1000
+64
+edge00 edge01 100
+edge10 edge01 100
+edge20 edge01 100
+edge30 edge01 100
+edge00 edge01 100
+edge10 edge01 100
+edge20 edge01 100
+edge30 edge01 100
+edge00 edge11 100
+edge10 edge11 100
+edge20 edge11 100
+edge30 edge11 100
+edge00 edge11 100
+edge10 edge11 100
+edge20 edge11 100
+edge30 edge11 100
+edge00 edge21 100
+edge10 edge21 100
+edge20 edge21 100
+edge30 edge21 100
+edge00 edge21 100
+edge10 edge21 100
+edge20 edge21 100
+edge30 edge21 100
+edge00 edge31 100
+edge10 edge31 100
+edge20 edge31 100
+edge30 edge31 100
+edge00 edge31 100
+edge10 edge31 100
+edge20 edge31 100
+edge30 edge31 100

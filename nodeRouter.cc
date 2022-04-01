@@ -11,6 +11,8 @@
 #include "types.h"
 #include "globals.h"
 #include "utils.h"
+#include <random>
+
 using namespace omnetpp;
 
 NodeRouter::NodeRouter(Node& node): _node{node} {
@@ -89,21 +91,23 @@ NodeRouter::NodeRouter(Node& node): _node{node} {
     }
 }
 
-int NodeRouter::getRoutesCount(std::string destName) {
+int NodeRouter::getRoutesCount(const std::string& destName) {
     return _paths[destName].size();
 }
 
-void NodeRouter::setRoute(Packet* pkt, std::string destEdge, int routeIndex) {
+void NodeRouter::setRoute(Packet* pkt, const std::string& destEdge, int routeIndex) {
     if (_paths.find(destEdge) == _paths.end())
         return;
     auto paths = _paths[destEdge];
     if (routeIndex >= paths.size() || routeIndex < 0)
         return;
+
     std::vector<std::string> route = paths[routeIndex];
     pkt->setRouteArraySize(route.size());
     for (int i = 0; i < route.size(); ++i) {
         pkt->setRoute(route.size() - 1 - i, route[i].c_str());
     }
+    pkt->setDestEdge(destEdge.c_str());
 }
 
 void NodeRouter::sendNext(Packet* pkt) {
@@ -114,10 +118,30 @@ void NodeRouter::sendNext(Packet* pkt) {
         Gate* gateInfo = _neighbors[next];
         cGate* cGate = _node.gate(gateInfo->direction.c_str(), gateInfo->index);
         // Send delayed
-        simtime_t time = cGate->getTransmissionChannel()->getTransmissionFinishTime();
-        _node.sendDelayed(pkt, time > 0 ? time : 0, cGate);
+        double delay = cGate->getTransmissionChannel()->getTransmissionFinishTime().dbl() - simTime().dbl();
+        _node.sendDelayed(pkt, delay > 0 ? delay : 0, cGate);
+    } else {
+        delete pkt;
     }
 }
+
+void NodeRouter::sendTo(Packet* pkt, const std::string& destEdge) {
+    setCalculatedRoute(pkt, destEdge);
+    sendNext(pkt);
+}
+
+int NodeRouter::calcRouteIndex(Packet* pkt, const std::string& destEdge) {
+    if (_paths.find(destEdge) == _paths.end())
+        return 0;
+    // TODO
+    return std::rand() % _paths[destEdge].size();
+}
+
+void NodeRouter::setCalculatedRoute(Packet* pkt, const std::string& destEdge) {
+    int routeIndex = calcRouteIndex(pkt, destEdge);
+    setRoute(pkt, destEdge, routeIndex);
+}
+
 
 
 

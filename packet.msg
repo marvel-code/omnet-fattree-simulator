@@ -19,4 +19,5 @@
 
 message Packet extends cPacket {
 	string route[]; // Reverse sequence. Route from e1 to e2 through a1 c a2 is ["e2", "a2", "c", "a1"]
+	string destEdge; // Destination edge name
 }

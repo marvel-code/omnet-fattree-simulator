@@ -212,6 +212,7 @@ void Packet::copy(const Packet& other)
     route_arraysize = other.route_arraysize;
     for (unsigned int i=0; i<route_arraysize; i++)
         this->route[i] = other.route[i];
+    this->destEdge = other.destEdge;
 }
 
 void Packet::parsimPack(omnetpp::cCommBuffer *b) const
@@ -219,6 +220,7 @@ void Packet::parsimPack(omnetpp::cCommBuffer *b) const
     ::omnetpp::cPacket::parsimPack(b);
     b->pack(route_arraysize);
     doParsimArrayPacking(b,this->route,route_arraysize);
+    doParsimPacking(b,this->destEdge);
 }
 
 void Packet::parsimUnpack(omnetpp::cCommBuffer *b)
@@ -232,6 +234,7 @@ void Packet::parsimUnpack(omnetpp::cCommBuffer *b)
         this->route = new ::omnetpp::opp_string[route_arraysize];
         doParsimArrayUnpacking(b,this->route,route_arraysize);
     }
+    doParsimUnpacking(b,this->destEdge);
 }
 
 void Packet::setRouteArraySize(unsigned int size)
@@ -262,6 +265,16 @@ void Packet::setRoute(unsigned int k, const char * route)
 {
     if (k>=route_arraysize) throw omnetpp::cRuntimeError("Array of size %d indexed by %d", route_arraysize, k);
     this->route[k] = route;
+}
+
+const char * Packet::getDestEdge() const
+{
+    return this->destEdge.c_str();
+}
+
+void Packet::setDestEdge(const char * destEdge)
+{
+    this->destEdge = destEdge;
 }
 
 class PacketDescriptor : public omnetpp::cClassDescriptor
@@ -329,7 +342,7 @@ const char *PacketDescriptor::getProperty(const char *propertyname) const
 int PacketDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 1+basedesc->getFieldCount() : 1;
+    return basedesc ? 2+basedesc->getFieldCount() : 2;
 }
 
 unsigned int PacketDescriptor::getFieldTypeFlags(int field) const
@@ -342,8 +355,9 @@ unsigned int PacketDescriptor::getFieldTypeFlags(int field) const
     }
     static unsigned int fieldTypeFlags[] = {
         FD_ISARRAY | FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<1) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<2) ? fieldTypeFlags[field] : 0;
 }
 
 const char *PacketDescriptor::getFieldName(int field) const
@@ -356,8 +370,9 @@ const char *PacketDescriptor::getFieldName(int field) const
     }
     static const char *fieldNames[] = {
         "route",
+        "destEdge",
     };
-    return (field>=0 && field<1) ? fieldNames[field] : nullptr;
+    return (field>=0 && field<2) ? fieldNames[field] : nullptr;
 }
 
 int PacketDescriptor::findField(const char *fieldName) const
@@ -365,6 +380,7 @@ int PacketDescriptor::findField(const char *fieldName) const
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount() : 0;
     if (fieldName[0]=='r' && strcmp(fieldName, "route")==0) return base+0;
+    if (fieldName[0]=='d' && strcmp(fieldName, "destEdge")==0) return base+1;
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
@@ -378,8 +394,9 @@ const char *PacketDescriptor::getFieldTypeString(int field) const
     }
     static const char *fieldTypeStrings[] = {
         "string",
+        "string",
     };
-    return (field>=0 && field<1) ? fieldTypeStrings[field] : nullptr;
+    return (field>=0 && field<2) ? fieldTypeStrings[field] : nullptr;
 }
 
 const char **PacketDescriptor::getFieldPropertyNames(int field) const
@@ -448,6 +465,7 @@ std::string PacketDescriptor::getFieldValueAsString(void *object, int field, int
     Packet *pp = (Packet *)object; (void)pp;
     switch (field) {
         case 0: return oppstring2string(pp->getRoute(i));
+        case 1: return oppstring2string(pp->getDestEdge());
         default: return "";
     }
 }
@@ -463,6 +481,7 @@ bool PacketDescriptor::setFieldValueAsString(void *object, int field, int i, con
     Packet *pp = (Packet *)object; (void)pp;
     switch (field) {
         case 0: pp->setRoute(i,(value)); return true;
+        case 1: pp->setDestEdge((value)); return true;
         default: return false;
     }
 }

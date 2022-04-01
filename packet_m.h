@@ -24,6 +24,7 @@
  * message Packet extends cPacket
  * {
  *     string route[]; // Reverse sequence. Route from e1 to e2 through a1 c a2 is ["e2", "a2", "c", "a1"]
+ *     string destEdge; // Destination edge name
  * }
  * </pre>
  */
@@ -32,6 +33,7 @@ class Packet : public ::omnetpp::cPacket
   protected:
     ::omnetpp::opp_string *route; // array ptr
     unsigned int route_arraysize;
+    ::omnetpp::opp_string destEdge;
 
   private:
     void copy(const Packet& other);
@@ -54,6 +56,8 @@ class Packet : public ::omnetpp::cPacket
     virtual unsigned int getRouteArraySize() const;
     virtual const char * getRoute(unsigned int k) const;
     virtual void setRoute(unsigned int k, const char * route);
+    virtual const char * getDestEdge() const;
+    virtual void setDestEdge(const char * destEdge);
 };
 
 inline void doParsimPacking(omnetpp::cCommBuffer *b, const Packet& obj) {obj.parsimPack(b);}

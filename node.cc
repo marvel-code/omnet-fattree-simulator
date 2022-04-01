@@ -22,6 +22,7 @@
 #include "utils.h"
 #include "nodeRouter.h"
 #include <map>
+#include "trafficGenerator.h"
 
 Define_Module(Node);
 
@@ -35,10 +36,8 @@ void Node::initialize()
     _router = new NodeRouter(*this);
 
     if (_type == NodeTypes::Edge) {
-        //_trafficGenerator = new TrafficGenerator(*this);
-        Packet* pkt = new Packet();
-        _router->setRoute(pkt, makeNodeName(NodeTypes::Edge, 0, 0), 0);
-        _router->sendNext(pkt);
+        _trafficGenerator = new TrafficGenerator(*this);
+        _trafficGenerator->launch();
     }
 }
 
@@ -46,7 +45,7 @@ void Node::handleMessage(cMessage *msg)
 {
     Packet* pkt = (Packet*)msg;
     if (_type == NodeTypes::Edge && pkt->isSelfMessage()) {
-
+        _router->sendTo(pkt, pkt->getDestEdge());
     } else {
         _router->sendNext(pkt);
     }
@@ -62,4 +61,8 @@ int Node::getPod() {
 
 NodeTypes Node::getType() {
     return _type;
+}
+
+NodeRouter* Node::getRouter() {
+    return _router;
 }
