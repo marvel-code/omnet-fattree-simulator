@@ -21,6 +21,7 @@
 #include <string>
 
 class NodeRouter;
+class TrafficGenerator;
 
 using namespace omnetpp;
 
@@ -30,6 +31,7 @@ class Node : public cSimpleModule
     int _pod;
     int _index;
     NodeRouter* _router;
+    TrafficGenerator* _trafficGenerator;
 
   protected:
     virtual void initialize();

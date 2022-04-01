@@ -108,10 +108,14 @@ void NodeRouter::setRoute(Packet* pkt, std::string destEdge, int routeIndex) {
 
 void NodeRouter::sendNext(Packet* pkt) {
     if (pkt->getRouteArraySize() > 0) {
+        // Calc Gate
         std::string next = pkt->getRoute(pkt->getRouteArraySize() - 1);
         pkt->setRouteArraySize(pkt->getRouteArraySize() - 1);
-        Gate* gate = _neighbors[next];
-        _node.send(pkt, gate->direction.c_str(), gate->index);
+        Gate* gateInfo = _neighbors[next];
+        cGate* cGate = _node.gate(gateInfo->direction.c_str(), gateInfo->index);
+        // Send delayed
+        simtime_t time = cGate->getTransmissionChannel()->getTransmissionFinishTime();
+        _node.sendDelayed(pkt, time > 0 ? time : 0, cGate);
     }
 }
 

@@ -1,4 +1,3 @@
-
 network FatTree {
 	submodules:
 		// Core layer
@@ -28,55 +27,55 @@ network FatTree {
 		edge31: Node { @display("p=730.0,290"); }
 	connections:
 		// Pod 0
-		edge00.up++ <--> aggr00.down++;
-		edge00.up++ <--> aggr01.down++;
-		edge01.up++ <--> aggr00.down++;
-		edge01.up++ <--> aggr01.down++;
-		aggr00.up++ <--> core0.down++;
-		aggr00.up++ <--> core1.down++;
-		aggr00.up++ <--> core2.down++;
-		aggr00.up++ <--> core3.down++;
-		aggr01.up++ <--> core0.down++;
-		aggr01.up++ <--> core1.down++;
-		aggr01.up++ <--> core2.down++;
-		aggr01.up++ <--> core3.down++;
+		edge00.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr00.down++;
+		edge00.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr01.down++;
+		edge01.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr00.down++;
+		edge01.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr01.down++;
+		aggr00.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core0.down++;
+		aggr00.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core1.down++;
+		aggr00.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core2.down++;
+		aggr00.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core3.down++;
+		aggr01.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core0.down++;
+		aggr01.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core1.down++;
+		aggr01.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core2.down++;
+		aggr01.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core3.down++;
 		// Pod 1
-		edge10.up++ <--> aggr10.down++;
-		edge10.up++ <--> aggr11.down++;
-		edge11.up++ <--> aggr10.down++;
-		edge11.up++ <--> aggr11.down++;
-		aggr10.up++ <--> core0.down++;
-		aggr10.up++ <--> core1.down++;
-		aggr10.up++ <--> core2.down++;
-		aggr10.up++ <--> core3.down++;
-		aggr11.up++ <--> core0.down++;
-		aggr11.up++ <--> core1.down++;
-		aggr11.up++ <--> core2.down++;
-		aggr11.up++ <--> core3.down++;
+		edge10.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr10.down++;
+		edge10.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr11.down++;
+		edge11.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr10.down++;
+		edge11.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr11.down++;
+		aggr10.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core0.down++;
+		aggr10.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core1.down++;
+		aggr10.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core2.down++;
+		aggr10.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core3.down++;
+		aggr11.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core0.down++;
+		aggr11.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core1.down++;
+		aggr11.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core2.down++;
+		aggr11.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core3.down++;
 		// Pod 2
-		edge20.up++ <--> aggr20.down++;
-		edge20.up++ <--> aggr21.down++;
-		edge21.up++ <--> aggr20.down++;
-		edge21.up++ <--> aggr21.down++;
-		aggr20.up++ <--> core0.down++;
-		aggr20.up++ <--> core1.down++;
-		aggr20.up++ <--> core2.down++;
-		aggr20.up++ <--> core3.down++;
-		aggr21.up++ <--> core0.down++;
-		aggr21.up++ <--> core1.down++;
-		aggr21.up++ <--> core2.down++;
-		aggr21.up++ <--> core3.down++;
+		edge20.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr20.down++;
+		edge20.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr21.down++;
+		edge21.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr20.down++;
+		edge21.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr21.down++;
+		aggr20.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core0.down++;
+		aggr20.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core1.down++;
+		aggr20.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core2.down++;
+		aggr20.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core3.down++;
+		aggr21.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core0.down++;
+		aggr21.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core1.down++;
+		aggr21.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core2.down++;
+		aggr21.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core3.down++;
 		// Pod 3
-		edge30.up++ <--> aggr30.down++;
-		edge30.up++ <--> aggr31.down++;
-		edge31.up++ <--> aggr30.down++;
-		edge31.up++ <--> aggr31.down++;
-		aggr30.up++ <--> core0.down++;
-		aggr30.up++ <--> core1.down++;
-		aggr30.up++ <--> core2.down++;
-		aggr30.up++ <--> core3.down++;
-		aggr31.up++ <--> core0.down++;
-		aggr31.up++ <--> core1.down++;
-		aggr31.up++ <--> core2.down++;
-		aggr31.up++ <--> core3.down++;
+		edge30.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr30.down++;
+		edge30.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr31.down++;
+		edge31.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr30.down++;
+		edge31.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> aggr31.down++;
+		aggr30.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core0.down++;
+		aggr30.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core1.down++;
+		aggr30.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core2.down++;
+		aggr30.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core3.down++;
+		aggr31.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core0.down++;
+		aggr31.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core1.down++;
+		aggr31.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core2.down++;
+		aggr31.up++ <--> {delay=0ms; datarate=100.0Mbps;} <--> core3.down++;
 }

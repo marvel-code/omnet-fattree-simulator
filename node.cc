@@ -21,8 +21,11 @@
 #include "packet_m.h"
 #include "utils.h"
 #include "nodeRouter.h"
+#include <map>
 
 Define_Module(Node);
+
+
 
 void Node::initialize()
 {
@@ -32,8 +35,9 @@ void Node::initialize()
     _router = new NodeRouter(*this);
 
     if (_type == NodeTypes::Edge) {
+        //_trafficGenerator = new TrafficGenerator(*this);
         Packet* pkt = new Packet();
-        _router->setRoute(pkt, makeNodeName(NodeTypes::Edge, 0, 0), 1);
+        _router->setRoute(pkt, makeNodeName(NodeTypes::Edge, 0, 0), 0);
         _router->sendNext(pkt);
     }
 }
@@ -41,7 +45,11 @@ void Node::initialize()
 void Node::handleMessage(cMessage *msg)
 {
     Packet* pkt = (Packet*)msg;
-    _router->sendNext(pkt);
+    if (_type == NodeTypes::Edge && pkt->isSelfMessage()) {
+
+    } else {
+        _router->sendNext(pkt);
+    }
 }
 
 int Node::getIndex() {
