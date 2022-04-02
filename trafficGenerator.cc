@@ -14,6 +14,7 @@
 #include "nodeRouter.h"
 #include <stdio.h>
 #include <omnetpp.h>
+#include "globals.h"
 
 using namespace omnetpp;
 
@@ -31,8 +32,9 @@ void TrafficGenerator::readTM(int index) {
         std::string line;
         std::getline(f, line);
         _interval = stoi(line);
-        std::getline(f, line);
-        _packetSize = stoi(line) * 1024;
+        //std::getline(f, line);
+        //_packetSize = stoi(line) * 1024;
+        _packetSize = PACKET_SIZE_BITS;
         while (std::getline(f, line)) {
             // Read
             char e1[16];
@@ -47,7 +49,7 @@ void TrafficGenerator::readTM(int index) {
             // Schedule
             for (int i = 0; i < packetCount; ++i) {
                 Packet* pkt = new Packet();
-                pkt->setByteLength(_packetSize);
+                pkt->setBitLength(_packetSize);
                 pkt->setDestEdge(e2);
                 _node.scheduleAt(simTime().dbl() + ((double)i + 0.5) / packetCount * (_interval / 1000), pkt);
             }

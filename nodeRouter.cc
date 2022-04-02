@@ -115,8 +115,7 @@ void NodeRouter::sendNext(Packet* pkt) {
         // Calc Gate
         std::string next = pkt->getRoute(pkt->getRouteArraySize() - 1);
         pkt->setRouteArraySize(pkt->getRouteArraySize() - 1);
-        Gate* gateInfo = _neighbors[next];
-        cGate* cGate = _node.gate(gateInfo->direction.c_str(), gateInfo->index);
+        cGate* cGate = _neighbors[next]->getOutputGate(_node);
         // Send delayed
         double delay = cGate->getTransmissionChannel()->getTransmissionFinishTime().dbl() - simTime().dbl();
         _node.sendDelayed(pkt, delay > 0 ? delay : 0, cGate);

@@ -1,5 +1,4 @@
 1000
-64
 edge00 edge01 100
 edge10 edge01 100
 edge20 edge01 100

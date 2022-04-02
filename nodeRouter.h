@@ -20,13 +20,21 @@ using namespace omnetpp;
 struct Gate {
     std::string direction; // up, down
     int index;
-    Gate(std::string d, int i) : direction{d + "$o"}, index{i} {}
+    Gate(std::string d, int i) : direction{d}, index{i} {}
+    cGate* getOutputGate(Node& node) {
+        return node.gate((direction + "$o").c_str(), index);
+    }
+    cGate* getInputGate(Node& node) {
+        return node.gate((direction + "$i").c_str(), index);
+    }
 };
 
 class NodeRouter {
     Node& _node;
     std::map<std::string, Gate*> _neighbors; // neighbor node -> Gate
     std::map<std::string, std::vector<std::vector<std::string>>> _paths; // edge -> paths
+
+
 
 public:
     NodeRouter(Node& node);

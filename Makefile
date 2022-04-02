@@ -30,7 +30,14 @@ PROJECTRELATIVE_PATH =
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS = $O/node.o $O/nodeRouter.o $O/trafficGenerator.o $O/utils.o $O/packet_m.o
+OBJS = \
+    $O/linkState.o \
+    $O/node.o \
+    $O/nodeRouter.o \
+    $O/nodeStatistic.o \
+    $O/trafficGenerator.o \
+    $O/utils.o \
+    $O/packet_m.o
 
 # Message files
 MSGFILES = \

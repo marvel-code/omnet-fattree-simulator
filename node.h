@@ -19,6 +19,7 @@
 #include <omnetpp.h>
 #include "types.h"
 #include <string>
+#include "linkState.h"
 
 class NodeRouter;
 class TrafficGenerator;
@@ -33,9 +34,14 @@ class Node : public cSimpleModule
     NodeRouter* _router;
     TrafficGenerator* _trafficGenerator;
 
+    std::ofstream _f;
+
+    std::map<std::string, LinkState*> _linkStates; // neighbor -> link state (eg. "aggr01" -> LinkState*)
+
   protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
+    virtual void finish();
 
   public:
     int getIndex();
