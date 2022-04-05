@@ -35,6 +35,7 @@ OBJS = \
     $O/node.o \
     $O/nodeRouter.o \
     $O/nodeStatistic.o \
+    $O/TrafficBalancer.o \
     $O/trafficGenerator.o \
     $O/utils.o \
     $O/packet_m.o

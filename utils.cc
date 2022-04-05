@@ -6,6 +6,8 @@
  */
 
 #include "utils.h"
+#include "globals.h"
+#include <math.h>
 
 std::string makeNodeName(NodeTypes type, int index, int pod) {
     std::string result;
@@ -17,3 +19,6 @@ std::string makeNodeName(NodeTypes type, int index, int pod) {
     return result;
 }
 
+bool dblEquals(double x, double y, double eps) {
+    return std::abs(x - y) < eps;
+}

@@ -39,7 +39,9 @@ NodeRouter::NodeRouter(Node& node): _node{node} {
             _neighbors["aggr" + std::to_string(pod) + std::to_string(i)] = new Gate("up", i);
         }
     }
+
     // Initialize routes to other edges
+    std::map<std::string, int> destEdgePathCounts;
     if (node.getType() == NodeTypes::Edge) {
         int index = node.getIndex();
         int pod = node.getPod();
@@ -49,11 +51,9 @@ NodeRouter::NodeRouter(Node& node): _node{node} {
                 continue;
             std::string edge = makeNodeName(NodeTypes::Edge, e, pod);
             _paths[edge] = std::vector<std::vector<std::string>>();
+            destEdgePathCounts[edge] = 0;
             for (int a1 = 0; a1 < AGGR_PER_POD; ++a1) {
                 std::vector<std::string> path;
-                path.push_back(makeNodeName(NodeTypes::Aggr, a1, pod));
-                path.push_back(edge);
-                _paths[edge].push_back(path);
                 for (int a2 = 0; a2 < AGGR_PER_POD; ++a2) {
                     if (a1 == a2)
                         continue;
@@ -63,8 +63,15 @@ NodeRouter::NodeRouter(Node& node): _node{node} {
                         path.push_back(makeNodeName(NodeTypes::Core, c));
                         path.push_back(makeNodeName(NodeTypes::Aggr, a2, pod));
                         path.push_back(edge);
+                        _paths[edge].push_back(path);
+                        destEdgePathCounts[edge] += 1;
                     }
                 }
+                path = std::vector<std::string>();
+                path.push_back(makeNodeName(NodeTypes::Aggr, a1, pod));
+                path.push_back(edge);
+                _paths[edge].push_back(path);
+                destEdgePathCounts[edge] += 1;
             }
         }
         // Edge on other pods
@@ -74,6 +81,7 @@ NodeRouter::NodeRouter(Node& node): _node{node} {
             for (int e = 0; e < EDGE_PER_POD; ++e) {
                 std::string edge = makeNodeName(NodeTypes::Edge, e, p);
                 _paths[edge] = std::vector<std::vector<std::string>>();
+                destEdgePathCounts[edge] = 0;
                 for (int a1 = 0; a1 < AGGR_PER_POD; ++a1) {
                     for (int a2 = 0; a2 < AGGR_PER_POD; ++a2) {
                         for (int c = 0; c < CORE_COUNT; ++c) {
@@ -83,10 +91,18 @@ NodeRouter::NodeRouter(Node& node): _node{node} {
                             path.push_back(makeNodeName(NodeTypes::Aggr, a2, p));
                             path.push_back(edge);
                             _paths[edge].push_back(path);
+                            destEdgePathCounts[edge] += 1;
                         }
                     }
                 }
             }
+        }
+    }
+
+    // Initialize traffic balancers
+    if (node.getType() == NodeTypes::Edge) {
+        for (auto dep: destEdgePathCounts) {
+            _trafficBalancers[dep.first] = new TrafficBalancer(dep.first, dep.second);
         }
     }
 }
@@ -132,8 +148,7 @@ void NodeRouter::sendTo(Packet* pkt, const std::string& destEdge) {
 int NodeRouter::calcRouteIndex(Packet* pkt, const std::string& destEdge) {
     if (_paths.find(destEdge) == _paths.end())
         return 0;
-    // TODO
-    return std::rand() % _paths[destEdge].size();
+    return _trafficBalancers[destEdge]->computePacketPathIndex(pkt);
 }
 
 void NodeRouter::setCalculatedRoute(Packet* pkt, const std::string& destEdge) {

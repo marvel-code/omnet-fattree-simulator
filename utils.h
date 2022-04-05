@@ -10,8 +10,10 @@
 
 #include <string>
 #include "types.h"
+#include "globals.h"
 
 std::string makeNodeName(NodeTypes type, int index, int pod = -1);
+bool dblEquals(double x, double y, double eps = EPS);
 
 
 #endif /* UTILS_H_ */

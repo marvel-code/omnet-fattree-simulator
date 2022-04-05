@@ -16,7 +16,13 @@ using namespace omnetpp;
 #include "packet_m.h"
 #include <map>
 #include <vector>
+#include <math.h>
+#include "utils.h"
+#include <algorithm>
+#include "TrafficBalancer.h"
 
+
+/** Кастомное описание cGate */
 struct Gate {
     std::string direction; // up, down
     int index;
@@ -29,12 +35,13 @@ struct Gate {
     }
 };
 
+
 class NodeRouter {
     Node& _node;
     std::map<std::string, Gate*> _neighbors; // neighbor node -> Gate
     std::map<std::string, std::vector<std::vector<std::string>>> _paths; // edge -> paths
 
-
+    std::map<std::string, TrafficBalancer*> _trafficBalancers; // Destination edge name -> edge traffic router
 
 public:
     NodeRouter(Node& node);
