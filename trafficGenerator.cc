@@ -46,27 +46,29 @@ int TrafficGenerator::readTM(int index, double offset) {
     int interval_ms = -1;
     if (f.is_open()) {
         std::string line;
-        // Interval
+
+        // Line 1
         std::getline(f, line);
-        interval_ms = stoi(line);
-        // Packet size
+        std::stringstream(line) >> interval_ms;
+
+        // Line 2
         std::getline(f, line);
         int packetSize;
         int packetDelayMean;
         int packetDelayStdDev;
         std::stringstream(line) >> packetSize >> packetDelayMean >> packetDelayStdDev;
 
+        // Random generator
         std::random_device rd{};
         std::mt19937 gen{rd()};
         std::normal_distribution<double> d(packetDelayMean, packetDelayStdDev);
-        while (std::getline(f, line)) {
-            // Sender
-            std::string edge1;
-            // Receiver
-            std::string edge2;
-            // Packet count
-            int packetCount;
 
+        // Lines ...
+        while (std::getline(f, line)) {
+            // Pair settings
+            std::string edge1;
+            std::string edge2;
+            int packetCount;
             std::stringstream(line) >> edge1 >> edge2 >> packetCount;
             if (edge1 != _node.getName())
                 continue;
@@ -78,7 +80,6 @@ int TrafficGenerator::readTM(int index, double offset) {
                 Packet* pkt = new Packet();
                 pkt->setByteLength(packetSize);
                 pkt->setDestEdge(edge2.c_str());
-
                 time += (double)d(gen) / 1000;
                 _node.scheduleAt(time, pkt);
             }
