@@ -66,17 +66,24 @@ void Node::initialize()
     }
 }
 
+void Node::processTact() {
+    for (auto it = _linkStates.begin(); it != _linkStates.end(); ++it) {
+        it->second->refreshUtilization();
+        _f << std::round(simTime().dbl() * 1000) << "\t" << it->first << "\t" << it->second->getUtilization() << "\n";
+    }
+}
+
 void Node::handleMessage(cMessage *msg)
 {
     if (msg->isSelfMessage() && std::string(msg->getName()) == "tact") {
-        for (auto it = _linkStates.begin(); it != _linkStates.end(); ++it) {
-            it->second->refreshUtilization();
-            _f << std::round(simTime().dbl() * 1000) << "\t" << it->first << "\t" << it->second->getUtilization() << "\n";
+        processTact();
+        if (simTime() - _lastPacketArrival < TACT_IDLE_OFF_S) {
+            scheduleAt(simTime() + TACT_S, msg);
         }
-        scheduleAt(simTime() + TACT_S, msg);
         return;
     }
 
+    _lastPacketArrival = simTime();
     Packet* pkt = (Packet*)msg;
     if (_type == NodeTypes::Edge && pkt->isSelfMessage()) {
         _router->sendTo(pkt, pkt->getDestEdge());

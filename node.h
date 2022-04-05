@@ -33,6 +33,7 @@ class Node : public cSimpleModule
     int _index;
     NodeRouter* _router;
     TrafficGenerator* _trafficGenerator;
+    simtime_t _lastPacketArrival;
 
     std::ofstream _f;
 
@@ -42,6 +43,7 @@ class Node : public cSimpleModule
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
     virtual void finish();
+    void processTact();
 
   public:
     int getIndex();
