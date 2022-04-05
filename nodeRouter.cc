@@ -12,31 +12,41 @@
 #include "globals.h"
 #include "utils.h"
 #include <random>
+#include <utility>
 
 using namespace omnetpp;
+
+/** Returns: first is input, second is output */
+std::pair<cGate*, cGate*> makeIOPair(Node& node, const char* name, int index) {
+    return std::pair<cGate*, cGate*>(
+            node.gate((name + std::string("$i")).c_str(), index),
+            node.gate((name + std::string("$o")).c_str(), index)
+        );
+}
 
 NodeRouter::NodeRouter(Node& node): _node{node} {
     // Initialize _neighbors
     if (node.getType() == NodeTypes::Core) {
         for (int i = 0; i < POD_COUNT; ++i) {
             for (int j = 0; j < AGGR_PER_POD; ++j) {
-                _neighbors["aggr" + std::to_string(i) + std::to_string(j)] = new Gate("down", AGGR_PER_POD * i + j);
+                _neighbors["aggr" + std::to_string(i) + std::to_string(j)] = makeIOPair(node, "down", AGGR_PER_POD * i + j);
+
             }
         }
     }
     else if (node.getType() == NodeTypes::Aggr) {
         for (int i = 0; i < CORE_COUNT; ++i) {
-            _neighbors["core" + std::to_string(i)] = new Gate("up", i);
+            _neighbors["core" + std::to_string(i)] = makeIOPair(node, "up", i);
         }
         int pod = node.getPod();
         for (int i = 0; i < EDGE_PER_POD; ++i) {
-            _neighbors["edge" + std::to_string(pod) + std::to_string(i)] = new Gate("down", i);
+            _neighbors["edge" + std::to_string(pod) + std::to_string(i)] = makeIOPair(node, "down", i);
         }
     }
     else if (node.getType() == NodeTypes::Edge) {
         int pod = node.getPod();
         for (int i = 0; i < AGGR_PER_POD; ++i) {
-            _neighbors["aggr" + std::to_string(pod) + std::to_string(i)] = new Gate("up", i);
+            _neighbors["aggr" + std::to_string(pod) + std::to_string(i)] = makeIOPair(node, "up", i);
         }
     }
 
@@ -131,7 +141,7 @@ void NodeRouter::sendNext(Packet* pkt) {
         // Calc Gate
         std::string next = pkt->getRoute(pkt->getRouteArraySize() - 1);
         pkt->setRouteArraySize(pkt->getRouteArraySize() - 1);
-        cGate* cGate = _neighbors[next]->getOutputGate(_node);
+        cGate* cGate = _neighbors[next].second;
         // Send delayed
         double delay = cGate->getTransmissionChannel()->getTransmissionFinishTime().dbl() - simTime().dbl();
         _node.sendDelayed(pkt, delay > 0 ? delay : 0, cGate);
@@ -154,6 +164,10 @@ int NodeRouter::calcRouteIndex(Packet* pkt, const std::string& destEdge) {
 void NodeRouter::setCalculatedRoute(Packet* pkt, const std::string& destEdge) {
     int routeIndex = calcRouteIndex(pkt, destEdge);
     setRoute(pkt, destEdge, routeIndex);
+}
+
+std::map<std::string, std::pair<cGate*, cGate*>> NodeRouter::getNeighbors() {
+    return _neighbors;
 }
 
 

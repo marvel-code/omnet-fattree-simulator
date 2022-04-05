@@ -1,9 +1,3 @@
 1000
-edge00 edge01 100
-edge10 edge01 100
-edge20 edge01 100
-edge30 edge01 100
-edge00 edge01 100
-edge10 edge01 100
-edge20 edge01 100
-edge30 edge01 100
+65536 50 10
+edge00 edge01

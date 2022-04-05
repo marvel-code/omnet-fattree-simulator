@@ -67,6 +67,7 @@ void Node::initialize()
 }
 
 void Node::processTact() {
+    // Log utilizations
     for (auto it = _linkStates.begin(); it != _linkStates.end(); ++it) {
         it->second->refreshUtilization();
         _f << std::round(simTime().dbl() * 1000) << "\t" << it->first << "\t" << it->second->getUtilization() << "\n";

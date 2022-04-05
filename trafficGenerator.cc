@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <omnetpp.h>
 #include "globals.h"
+#include <random>
+#include <sstream>
 
 using namespace omnetpp;
 
@@ -23,39 +25,67 @@ TrafficGenerator::TrafficGenerator(Node& node) : _node{node} {}
 
 void TrafficGenerator::launch() {
     readTM(0);
+    //readTMPipeline();
 }
 
-void TrafficGenerator::readTM(int index) {
+/** Reads all TM{i}.txt for i=0... */
+void TrafficGenerator::readTMPipeline() {
+    double startTime = 0;
+    for (int i = 0; ; ++i) {
+        int interval = readTM(i, startTime);
+        if (interval == -1)
+            break;
+        startTime += (double)interval / 1000;
+    }
+}
+
+/** Returns interval in milliseconds. */
+int TrafficGenerator::readTM(int index, double offset) {
     std::string path = "datasets/TM" + std::to_string(index) + ".txt";
     std::ifstream f(path);
+    int interval_ms = -1;
     if (f.is_open()) {
         std::string line;
+        // Interval
         std::getline(f, line);
-        _interval = stoi(line);
-        //std::getline(f, line);
-        //_packetSize = stoi(line) * 1024;
-        _packetSize = PACKET_SIZE_BITS;
+        interval_ms = stoi(line);
+        // Packet size
+        std::getline(f, line);
+        int packetSize;
+        int packetDelayMean;
+        int packetDelayStdDev;
+        std::stringstream(line) >> packetSize >> packetDelayMean >> packetDelayStdDev;
+
+        std::random_device rd{};
+        std::mt19937 gen{rd()};
+        std::normal_distribution<double> d(packetDelayMean, packetDelayStdDev);
         while (std::getline(f, line)) {
-            // Read
-            char e1[16];
-            char e2[16];
+            // Sender
+            std::string edge1;
+            // Receiver
+            std::string edge2;
+            // Packet count
             int packetCount;
-            sscanf(line.c_str(), "%s %s %d", e1, e2, &packetCount);
-            std::string edge1(e1);
-            std::string edge2(e2);
+
+            std::stringstream(line) >> edge1 >> edge2 >> packetCount;
             if (edge1 != _node.getName())
                 continue;
 
             // Schedule
-            for (int i = 0; i < packetCount; ++i) {
+            simtime_t startTime = simTime().dbl() + offset;
+            simtime_t time = startTime;
+            while (time - startTime < (double)interval_ms / 1000) {
                 Packet* pkt = new Packet();
-                pkt->setBitLength(_packetSize);
-                pkt->setDestEdge(e2);
-                _node.scheduleAt(simTime().dbl() + ((double)i + 0.5) / packetCount * (_interval / 1000), pkt);
+                pkt->setByteLength(packetSize);
+                pkt->setDestEdge(edge2.c_str());
+
+                time += (double)d(gen) / 1000;
+                _node.scheduleAt(time, pkt);
             }
         }
         f.close();
     }
+    return interval_ms;
 }
 
 

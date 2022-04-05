@@ -20,25 +20,13 @@ using namespace omnetpp;
 #include "utils.h"
 #include <algorithm>
 #include "TrafficBalancer.h"
+#include <omnetpp.h>
 
-
-/** Кастомное описание cGate */
-struct Gate {
-    std::string direction; // up, down
-    int index;
-    Gate(std::string d, int i) : direction{d}, index{i} {}
-    cGate* getOutputGate(Node& node) {
-        return node.gate((direction + "$o").c_str(), index);
-    }
-    cGate* getInputGate(Node& node) {
-        return node.gate((direction + "$i").c_str(), index);
-    }
-};
-
+using namespace omnetpp;
 
 class NodeRouter {
     Node& _node;
-    std::map<std::string, Gate*> _neighbors; // neighbor node -> Gate
+    std::map<std::string, std::pair<cGate*, cGate*>> _neighbors; // neighbor node -> cGate
     std::map<std::string, std::vector<std::vector<std::string>>> _paths; // edge -> paths
 
     std::map<std::string, TrafficBalancer*> _trafficBalancers; // Destination edge name -> edge traffic router
@@ -51,6 +39,7 @@ public:
     void sendNext(Packet* pkt);
     void sendTo(Packet* pkt, const std::string& destName);
     int calcRouteIndex(Packet* pkt, const std::string& destName);
+    std::map<std::string, std::pair<cGate*, cGate*>> getNeighbors();
 };
 
 #endif /* NODEROUTER_H_ */

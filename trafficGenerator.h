@@ -15,20 +15,13 @@
 using namespace omnetpp;
 
 class TrafficGenerator {
-
-    /** Traffic matrix */
-    std::map<std::string, std::pair<std::string, int>> _TM;
-    /** Traffic matrix interval in ms */
-    simtime_t _interval;
-    /** Packet size in bits */
-    int _packetSize;
-
     Node& _node;
 
 public:
     TrafficGenerator(Node& node);
     void launch();
-    void readTM(int index);
+    int readTM(int index, double offset = 0);
+    void readTMPipeline();
 };
 
 #endif /* TRAFFICGENERATOR_H_ */

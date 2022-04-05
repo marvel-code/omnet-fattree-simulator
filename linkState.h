@@ -11,8 +11,18 @@
 #include "packet_m.h"
 #include <queue>
 #include <fstream>
+#include "globals.h"
 
 using namespace omnetpp;
+
+struct PacketInfo {
+    simtime_t arrivalTime;
+    int bytes;
+    PacketInfo(simtime_t arrivalTime, int bytes)
+        : arrivalTime{arrivalTime},
+          bytes{bytes}
+    {}
+};
 
 class LinkState {
 
@@ -22,7 +32,7 @@ class LinkState {
     int _utilization; // from 0 to 100
 
     /** Queue of received packet time stamps in UTILIZATION_INTERVAL_MS */
-    std::queue<simtime_t> _intervalTimestamps;
+    std::queue<PacketInfo> _packetInfos;
 
 public:
     LinkState();
