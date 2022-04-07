@@ -28,7 +28,6 @@ TrafficBalancer::TrafficBalancer(const std::string& destEdge, int pathCount)
   for (int i = 0; i < pathCount; ++i) {
       _props[i] = 1. / pathCount;
   }
-//  _props[2] = 1.;
 }
 
 /** Update path proportions */
@@ -64,8 +63,19 @@ int TrafficBalancer::computePacketPathIndex(Packet* pkt) {
 
     // Path switch
     if (_lastArrivalTime == 0 || pktArrivalTime - _lastArrivalTime > MTBS_MS / 1000) {
-        /** Choose path that is respective to max token  */
-        _currentPathIndex = std::max_element(_tokens.begin(), _tokens.end()) - _tokens.begin();
+        /** Choose path that is respective to max token. Choose random between several max tokens.  */
+        std::vector<int> maxTokenIndices{0};
+        int maxToken =_tokens[0];
+        for (int i = 1; i < _tokens.size(); ++i) {
+            int t = _tokens[i];
+            if (t > maxToken) {
+                maxTokenIndices.clear();
+                maxTokenIndices.push_back(i);
+            } else if (t == maxToken) {
+                maxTokenIndices.push_back(i);
+            }
+        }
+        _currentPathIndex = maxTokenIndices[std::rand() % maxTokenIndices.size()];
     }
     _lastArrivalTime = pktArrivalTime;
 
