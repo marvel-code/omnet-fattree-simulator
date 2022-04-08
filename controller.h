@@ -17,6 +17,7 @@
 #define __MYNETWORK_CONTROLLER_H_
 
 #include <omnetpp.h>
+#include "DataCollectorConnector.h"
 
 using namespace omnetpp;
 
@@ -26,6 +27,7 @@ using namespace omnetpp;
 class Controller : public cSimpleModule
 {
     simtime_t _tactFinishTime;
+    DataCollectorConnector dataCollectorConnector;
 
   protected:
     virtual void initialize();
