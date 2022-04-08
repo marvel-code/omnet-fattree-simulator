@@ -25,6 +25,7 @@
 #include "trafficGenerator.h"
 #include <cmath>
 #include "timePacket_m.h"
+#include "statePacket_m.h"
 
 
 Define_Module(Node);
@@ -76,10 +77,18 @@ void Node::initialize()
 
 void Node::processTact() {
     // Log utilizations
-    for (auto it = _linkStates.begin(); it != _linkStates.end(); ++it) {
+    StatePacket* statePkt = new StatePacket("node-state");
+    statePkt->setTargetNode(getName());
+    statePkt->setSourceNodesArraySize(_linkStates.size());
+    statePkt->setNodeUtilizationsArraySize(_linkStates.size());
+    int index = 0;
+    for (auto it = _linkStates.begin(); it != _linkStates.end(); ++it, ++index) {
         it->second->refreshUtilization();
-        _f << std::round(simTime().dbl() * 1000) << "\t" << it->first << "\t" << it->second->getUtilization() << "\n";
+        statePkt->setSourceNodes(index, it->first.c_str());
+        statePkt->setNodeUtilizations(index, it->second->getUtilization());
+        //_f << std::round(simTime().dbl() * 1000) << "\t" << it->first << "\t" << it->second->getUtilization() << "\n";
     }
+    send(statePkt, "controller$o");
 }
 
 void Node::handleMessage(cMessage *msg)

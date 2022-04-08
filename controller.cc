@@ -16,6 +16,7 @@
 #include "controller.h"
 #include "globals.h"
 #include "timePacket_m.h"
+#include "statePacket_m.h"
 
 Define_Module(Controller);
 
@@ -42,6 +43,15 @@ void Controller::handleMessage(cMessage *msg)
             cMessage* dupMsg = msg->dup();
             send(dupMsg, "down$o", i);
         }
+
+        delete msg;
+        return;
+    }
+
+    if (msg->isName("node-state")) {
+        StatePacket* statePkt = (StatePacket*)msg;
+
+        // send to DataController
 
         delete msg;
         return;
