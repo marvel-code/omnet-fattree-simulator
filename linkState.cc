@@ -14,21 +14,23 @@ LinkState::~LinkState() {}
 
 void LinkState::processPacket(Packet* pkt) {
     // Refresh _intervalTimestamps
+    _packetInfos.push(PacketInfo(pkt->getArrivalTime(), pkt->getByteLength()));
+    _trafficBytes += pkt->getByteLength();
+    popStalePacketInfos();
+}
+
+void LinkState::popStalePacketInfos() {
     simtime_t currentTime = simTime();
-//    _intervalTimestamps.push(currentTime);
-//    while (currentTime - _intervalTimestamps.front() > UTILIZATION_INTERVAL_S) {
-//        _intervalTimestamps.pop();
-//    }
+    while (_packetInfos.size() > 0 && currentTime - _packetInfos.front().arrivalTime > UTILIZATION_INTERVAL_S) {
+        _trafficBytes -= _packetInfos.front().bytes;
+        _packetInfos.pop();
+    }
 }
 
 void LinkState::refreshUtilization() {
-//    simtime_t currentTime = simTime();
-//    while (_intervalTimestamps.size() > 0 && currentTime - _intervalTimestamps.front() > UTILIZATION_INTERVAL_S) {
-//        _intervalTimestamps.pop();
-//    }
-//    double packetSize = 64 * 1024;
-//    double currentCapacity = -1;
-//    _utilization = currentCapacity / CAPACITY_BPS;
+    popStalePacketInfos();
+    double currentCapacity = _trafficBytes * 8 / UTILIZATION_INTERVAL_S;
+    _utilization = currentCapacity / CAPACITY_BPS * 100;
 }
 
 int LinkState::getUtilization() {

@@ -27,7 +27,7 @@ using namespace omnetpp;
 class Controller : public cSimpleModule
 {
     simtime_t _tactFinishTime;
-    DataCollectorConnector dataCollectorConnector;
+    DataCollectorConnector _dataCollectorConnector;
 
   protected:
     virtual void initialize();

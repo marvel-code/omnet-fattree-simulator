@@ -7,7 +7,13 @@
 
 #include "DataCollectorConnector.h"
 #include <stdio.h>
-#include <winsock2.h>
+#include <omnetpp.h>
+#include <string>
+
+using namespace omnetpp;
+
+const char* DC_HOST = "127.0.0.1";
+const int   DC_PORT = 50123;
 
 DataCollectorConnector::DataCollectorConnector() {
     WORD ver = MAKEWORD(2,2);
@@ -18,7 +24,7 @@ DataCollectorConnector::DataCollectorConnector() {
 
     LPHOSTENT hostEnt;
 
-    hostEnt = gethostbyname("127.0.0.1");
+    hostEnt = gethostbyname(DC_HOST);
 
     if(!hostEnt)
     {
@@ -28,9 +34,9 @@ DataCollectorConnector::DataCollectorConnector() {
     }
 
     //Создаем сокет
-    SOCKET clientSock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    _sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    if(clientSock == SOCKET_ERROR)
+    if(_sock == SOCKET_ERROR)
     {
         printf("Unable to create socket\n");
         WSACleanup();
@@ -41,9 +47,9 @@ DataCollectorConnector::DataCollectorConnector() {
 
     serverInfo.sin_family = PF_INET;
     serverInfo.sin_addr = *((LPIN_ADDR)*hostEnt->h_addr_list);
-    serverInfo.sin_port = htons(50123);
+    serverInfo.sin_port = htons(DC_PORT);
 
-    retVal=connect(clientSock,(LPSOCKADDR)&serverInfo, sizeof(serverInfo));
+    retVal=connect(_sock,(LPSOCKADDR)&serverInfo, sizeof(serverInfo));
     if(retVal==SOCKET_ERROR)
     {
         printf("Unable to connect\n");
@@ -53,32 +59,55 @@ DataCollectorConnector::DataCollectorConnector() {
 
     printf("Connection made sucessfully\n");
 
-    char *pBuf = "Request";
+//    const char *pBuf = "Request";
+//
+//    printf("Sending request from client\n");
+//    retVal = send(_sock, pBuf, strlen(pBuf), 0);
+//
+//    if(retVal == SOCKET_ERROR)
+//    {
+//        printf("Unable to send\n");
+//        WSACleanup();
+//        throw 4;
+//    }
 
-    printf("Sending request from client\n");
-    retVal = send(clientSock, pBuf, strlen(pBuf), 0);
+//    char szResponse[9];
+//    retVal = recv(_sock, szResponse, 9, 0);
+//
+//    if(retVal == SOCKET_ERROR)
+//    {
+//        printf("Unable to recv\n");
+//        WSACleanup();
+//        throw 5;
+//    }
+//
+//    printf("Got the response from server\n%s\n",szResponse);
+}
 
-    if(retVal == SOCKET_ERROR)
-    {
-        printf("Unable to send\n");
-        WSACleanup();
-        throw 4;
+void DataCollectorConnector::sendStateFromNode(std::string& node, std::vector<std::pair<std::string, int>>& utilizations) {
+    std::string message;
+    message += std::to_string(simTime().dbl()) + ",";
+    message += node;
+    for (auto u: utilizations) {
+        message += "," + u.first;
+        message += "=" + std::to_string(u.second);
     }
+    message += '\0';
 
-    char szResponse[9];
-    retVal = recv(clientSock, szResponse, 9, 0);
+    send(_sock, message.c_str(), message.size(), 0);
 
+    char szResponse[10];
+    int retVal = recv(_sock, szResponse, 9, 0);
     if(retVal == SOCKET_ERROR)
     {
         printf("Unable to recv\n");
         WSACleanup();
         throw 5;
     }
+}
 
-    printf("Got the response from server\n%s\n",szResponse);
-
-    shutdown(clientSock, SD_SEND);
-    closesocket(clientSock);
+DataCollectorConnector::~DataCollectorConnector() {
+    closesocket(_sock);
     WSACleanup();
 }
 

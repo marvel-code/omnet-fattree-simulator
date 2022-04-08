@@ -21,4 +21,8 @@ const double TACT_S = 0.1; // Tact duration in seconds
 const double MTBS_MS = 50; // Minimum Time Before Switch-ability in seconds
 const double TOKENS_RESET_INTERVAL_S = 100; // ~0.5
 
+// Link state
+const double UTILIZATION_INTERVAL_S = TACT_S;
+const int CAPACITY_BPS = 100 * 1024 * 1024;
+
 #endif

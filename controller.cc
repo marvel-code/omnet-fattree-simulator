@@ -17,6 +17,9 @@
 #include "globals.h"
 #include "timePacket_m.h"
 #include "statePacket_m.h"
+#include <string>
+#include <vector>
+#include <utility>
 
 Define_Module(Controller);
 
@@ -52,6 +55,14 @@ void Controller::handleMessage(cMessage *msg)
         StatePacket* statePkt = (StatePacket*)msg;
 
         // send to DataController
+        std::string targetNode = statePkt->getTargetNode();
+        std::vector<std::pair<std::string, int>> utilizations;
+        for (int i = 0; i < statePkt->getSourceNodesArraySize(); ++i) {
+            std::string sourceNode = statePkt->getSourceNodes(i);
+            int utilization = statePkt->getNodeUtilizations(i);
+            utilizations.push_back(std::pair<std::string, int>(sourceNode, utilization));
+        }
+        _dataCollectorConnector.sendStateFromNode(targetNode, utilizations);
 
         delete msg;
         return;

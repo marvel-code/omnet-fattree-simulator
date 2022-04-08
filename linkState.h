@@ -11,7 +11,6 @@
 #include "packet_m.h"
 #include <queue>
 #include <fstream>
-#include "globals.h"
 
 using namespace omnetpp;
 
@@ -26,13 +25,11 @@ struct PacketInfo {
 
 class LinkState {
 
-    double UTILIZATION_INTERVAL_S = 0.1;
-    int CAPACITY_BPS = 100 * 1024 * 1024;
-
     int _utilization; // from 0 to 100
 
     /** Queue of received packet time stamps in UTILIZATION_INTERVAL_MS */
     std::queue<PacketInfo> _packetInfos;
+    int _trafficBytes = 0;
 
 public:
     LinkState();
@@ -41,6 +38,7 @@ public:
     void refreshUtilization();
     void processPacket(Packet* pkt);
     int getUtilization();
+    void popStalePacketInfos();
 };
 
 #endif /* LINKSTATE_H_ */

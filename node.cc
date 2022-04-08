@@ -97,6 +97,7 @@ void Node::handleMessage(cMessage *msg)
     if (msg->isName("tact-finish-time")) {
         TimePacket* timePkt = (TimePacket*)msg;
         _tactFinishTime = timePkt->getTime();
+        delete msg;
         return;
     }
 
