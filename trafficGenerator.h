@@ -16,12 +16,14 @@ using namespace omnetpp;
 
 class TrafficGenerator {
     Node& _node;
+    simtime_t _finishTime;
 
 public:
     TrafficGenerator(Node& node);
     void launch();
-    int readTM(int index, double offset = 0);
-    void readTMPipeline();
+    double readTM(int index, double offset = 0);
+    double readTMPipeline();
+    simtime_t getFinishTime();
 };
 
 #endif /* TRAFFICGENERATOR_H_ */

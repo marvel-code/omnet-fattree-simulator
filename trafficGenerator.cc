@@ -24,32 +24,40 @@ using namespace omnetpp;
 TrafficGenerator::TrafficGenerator(Node& node) : _node{node} {}
 
 void TrafficGenerator::launch() {
-    readTM(0);
+    _finishTime = simTime() + readTM(0);
     //readTMPipeline();
 }
 
-/** Reads all TM{i}.txt for i=0... */
-void TrafficGenerator::readTMPipeline() {
-    double startTime = 0;
-    for (int i = 0; ; ++i) {
-        int interval = readTM(i, startTime);
-        if (interval == -1)
-            break;
-        startTime += (double)interval / 1000;
-    }
+simtime_t TrafficGenerator::getFinishTime() {
+    return _finishTime;
 }
 
-/** Returns interval in milliseconds. */
-int TrafficGenerator::readTM(int index, double offset) {
+/** Reads all TM{i}.txt for i=0... */
+double TrafficGenerator::readTMPipeline() {
+    double startTime = 0;
+    for (int i = 0; ; ++i) {
+        double duration = readTM(i, startTime);
+        if (duration < 0)
+            break;
+        startTime += duration;
+    }
+    double pipelineDuration = startTime;
+    return pipelineDuration;
+}
+
+/** Returns TM duration in s. */
+double TrafficGenerator::readTM(int index, double offset) {
     std::string path = "datasets/TM" + std::to_string(index) + ".txt";
     std::ifstream f(path);
-    int interval_ms = -1;
+    double duration_s = -1;
     if (f.is_open()) {
         std::string line;
 
         // Line 1
         std::getline(f, line);
+        int interval_ms;
         std::stringstream(line) >> interval_ms;
+        duration_s = (double)interval_ms / 1000;
 
         // Line 2
         std::getline(f, line);
@@ -76,7 +84,7 @@ int TrafficGenerator::readTM(int index, double offset) {
             // Schedule
             simtime_t startTime = simTime().dbl() + offset;
             simtime_t time = startTime;
-            while (time - startTime < (double)interval_ms / 1000) {
+            while (time - startTime < duration_s) {
                 Packet* pkt = new Packet();
                 pkt->setByteLength(packetSize);
                 pkt->setDestEdge(edge2.c_str());
@@ -86,7 +94,7 @@ int TrafficGenerator::readTM(int index, double offset) {
         }
         f.close();
     }
-    return interval_ms;
+    return duration_s;
 }
 
 

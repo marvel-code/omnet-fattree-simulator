@@ -31,6 +31,7 @@ O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
 OBJS = \
+    $O/controller.o \
     $O/linkState.o \
     $O/node.o \
     $O/nodeRouter.o \
@@ -38,11 +39,17 @@ OBJS = \
     $O/TrafficBalancer.o \
     $O/trafficGenerator.o \
     $O/utils.o \
-    $O/packet_m.o
+    $O/packet_m.o \
+    $O/policyPacket_m.o \
+    $O/statePacket_m.o \
+    $O/timePacket_m.o
 
 # Message files
 MSGFILES = \
-    packet.msg
+    packet.msg \
+    policyPacket.msg \
+    statePacket.msg \
+    timePacket.msg
 
 # SM files
 SMFILES =

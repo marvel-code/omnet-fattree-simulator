@@ -16,14 +16,8 @@
 //
 // TODO auto-generated module
 //
-simple Node
+simple Controller
 {
-    parameters:
-        int type;
-        int pod;
-        int number;
     gates:
-        inout up[];
         inout down[];
-        inout controller;
 }

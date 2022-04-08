@@ -13,44 +13,23 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef __MYNETWORK_NODE_H_
-#define __MYNETWORK_NODE_H_
+#ifndef __MYNETWORK_CONTROLLER_H_
+#define __MYNETWORK_CONTROLLER_H_
 
 #include <omnetpp.h>
-#include "types.h"
-#include <string>
-#include "linkState.h"
-
-class NodeRouter;
-class TrafficGenerator;
 
 using namespace omnetpp;
 
-class Node : public cSimpleModule
+/**
+ * TODO - Generated class
+ */
+class Controller : public cSimpleModule
 {
-    NodeTypes _type;
-    int _pod;
-    int _index;
-    NodeRouter* _router;
-    TrafficGenerator* _trafficGenerator;
-    simtime_t _lastPacketArrival;
     simtime_t _tactFinishTime;
-
-    std::ofstream _f;
-
-    std::map<std::string, LinkState*> _linkStates; // neighbor -> link state (eg. "aggr01" -> LinkState*)
 
   protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
-    virtual void finish();
-    void processTact();
-
-  public:
-    int getIndex();
-    NodeTypes getType();
-    int getPod();
-    NodeRouter* getRouter();
 };
 
 #endif

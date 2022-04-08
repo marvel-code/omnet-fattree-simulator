@@ -13,17 +13,6 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-//
-// TODO auto-generated module
-//
-simple Node
-{
-    parameters:
-        int type;
-        int pod;
-        int number;
-    gates:
-        inout up[];
-        inout down[];
-        inout controller;
+packet PolicyPacket {
+	double proportions[];
 }

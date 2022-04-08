@@ -24,6 +24,8 @@
 #include <map>
 #include "trafficGenerator.h"
 #include <cmath>
+#include "timePacket_m.h"
+
 
 Define_Module(Node);
 
@@ -63,6 +65,12 @@ void Node::initialize()
     if (_type == NodeTypes::Edge) {
         _trafficGenerator = new TrafficGenerator(*this);
         _trafficGenerator->launch();
+        // Set tact finish time through controller from edge00
+        if (_pod == 0 && _index == 0) {
+            TimePacket* timePkt = new TimePacket("tact-finish-time");
+            timePkt->setTime(_trafficGenerator->getFinishTime().dbl());
+            this->send(timePkt, "controller$o");
+        }
     }
 }
 
@@ -76,14 +84,25 @@ void Node::processTact() {
 
 void Node::handleMessage(cMessage *msg)
 {
-    if (msg->isSelfMessage() && std::string(msg->getName()) == "tact") {
+    // Time set
+    if (msg->isName("tact-finish-time")) {
+        TimePacket* timePkt = (TimePacket*)msg;
+        _tactFinishTime = timePkt->getTime();
+        return;
+    }
+
+    // Tact
+    if (msg->isName("tact")) {
         processTact();
-        if (simTime() - _lastPacketArrival < TACT_IDLE_OFF_S) {
+        if (simTime() < _tactFinishTime) {
             scheduleAt(simTime() + TACT_S, msg);
+        } else {
+            delete msg;
         }
         return;
     }
 
+    // Traffic
     _lastPacketArrival = simTime();
     Packet* pkt = (Packet*)msg;
     if (_type == NodeTypes::Edge && pkt->isSelfMessage()) {
