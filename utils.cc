@@ -22,3 +22,12 @@ std::string makeNodeName(NodeTypes type, int index, int pod) {
 bool dblEquals(double x, double y, double eps) {
     return std::abs(x - y) < eps;
 }
+
+int put(char* buffer, int offset, unsigned x) {
+    buffer[offset + 0] = x & 0xff;
+    buffer[offset + 1] = (x >> 8) & 0xff;
+    buffer[offset + 2] = (x >> 16) & 0xff;
+    buffer[offset + 3] = (x >> 24) & 0xff;
+    return 4;
+}
+

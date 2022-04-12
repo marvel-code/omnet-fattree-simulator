@@ -31,8 +31,8 @@ O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
 OBJS = \
+    $O/AgentConnector.o \
     $O/controller.o \
-    $O/DataCollectorConnector.o \
     $O/linkState.o \
     $O/node.o \
     $O/nodeRouter.o \

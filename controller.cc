@@ -32,7 +32,7 @@ void Controller::handleMessage(cMessage *msg)
 {
     // Tact
     if (msg->isName("tact") && simTime() < _tactFinishTime) {
-        scheduleAt(simTime() + TACT_S, msg); // 1.5, because at 1. network state is initialized
+        scheduleAt(simTime() + TACT_S, msg);
         return;
     }
 
@@ -51,6 +51,7 @@ void Controller::handleMessage(cMessage *msg)
         return;
     }
 
+    // Node state
     if (msg->isName("node-state")) {
         StatePacket* statePkt = (StatePacket*)msg;
 
@@ -62,7 +63,8 @@ void Controller::handleMessage(cMessage *msg)
             int utilization = statePkt->getNodeUtilizations(i);
             utilizations.push_back(std::pair<std::string, int>(sourceNode, utilization));
         }
-        _dataCollectorConnector.sendStateFromNode(targetNode, utilizations);
+
+        //_dataCollectorConnector.sendStateFromNode(targetNode, utilizations);
 
         delete msg;
         return;

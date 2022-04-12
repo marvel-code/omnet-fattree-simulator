@@ -17,7 +17,9 @@
 #define __MYNETWORK_CONTROLLER_H_
 
 #include <omnetpp.h>
-#include "DataCollectorConnector.h"
+#include "AgentConnector.h"
+#include <map>
+#include "types.h"
 
 using namespace omnetpp;
 
@@ -27,7 +29,9 @@ using namespace omnetpp;
 class Controller : public cSimpleModule
 {
     simtime_t _tactFinishTime;
-    DataCollectorConnector _dataCollectorConnector;
+    AgentConnector _agentConnector;
+    std::map<NodePair, char> _linkUtilizations;
+    std::map<EdgePair, int> _aggrFlowThroughputs;
 
   protected:
     virtual void initialize();

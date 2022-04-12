@@ -63,6 +63,7 @@ void Node::initialize()
         }
     }
 
+    // Launch traffic generator
     if (_type == NodeTypes::Edge) {
         _trafficGenerator = new TrafficGenerator(*this);
         _trafficGenerator->launch();
@@ -86,7 +87,6 @@ void Node::processTact() {
         it->second->refreshUtilization();
         statePkt->setSourceNodes(index, it->first.c_str());
         statePkt->setNodeUtilizations(index, it->second->getUtilization());
-        //_f << std::round(simTime().dbl() * 1000) << "\t" << it->first << "\t" << it->second->getUtilization() << "\n";
     }
     send(statePkt, "controller$o");
 }
@@ -119,8 +119,7 @@ void Node::handleMessage(cMessage *msg)
         _router->sendTo(pkt, pkt->getDestEdge());
     } else {
         std::string sender(msg->getSenderModule()->getName());
-        LinkState* linkState = _linkStates[sender];
-        linkState->processPacket(pkt);
+        _linkStates[sender]->processPacket(pkt);
         _router->sendNext(pkt);
     }
 }
