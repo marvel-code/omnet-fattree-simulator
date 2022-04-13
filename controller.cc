@@ -20,11 +20,65 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include "utils.h"
 
 Define_Module(Controller);
 
 void Controller::initialize()
 {
+    // Init edge pair infos
+    for (int pod = 0; pod < POD_COUNT; ++pod) {
+        for (int index = 0; index < EDGE_PER_POD; ++index) {
+            std::string source = makeNodeName(NodeTypes::Edge, index, pod);
+            for (int p = 0; p < POD_COUNT; ++p) {
+                for (int e = 0; e < EDGE_PER_POD; ++e) {
+                    if (e == index && p == pod)
+                        continue;
+                    std::string target = makeNodeName(NodeTypes::Edge, e, p);
+                    EdgePairInfo epi(source, target);
+                    std::string path;
+                    if (p == pod) {
+                        // Edge on the same pod (10 for K=4)
+                        for (int a1 = 0; a1 < AGGR_PER_POD; ++a1) {
+                            for (int a2 = 0; a2 < AGGR_PER_POD; ++a2) {
+                                if (a1 == a2)
+                                    continue;
+                                for (int c = 0; c < CORE_COUNT; ++c) {
+                                    path = source;
+                                    path += makeNodeName(NodeTypes::Aggr, a1, pod);
+                                    path += makeNodeName(NodeTypes::Core, c);
+                                    path += makeNodeName(NodeTypes::Aggr, a2, p);
+                                    path += target;
+                                    epi.addPath(path);
+                                }
+                            }
+                            path = source;
+                            path += makeNodeName(NodeTypes::Aggr, a1, pod);
+                            path += target;
+                            epi.addPath(path);
+                        }
+                    } else {
+                        // Edge on the other pod (16 for K=4)
+                        for (int a1 = 0; a1 < AGGR_PER_POD; ++a1) {
+                            for (int a2 = 0; a2 < AGGR_PER_POD; ++a2) {
+                                for (int c = 0; c < CORE_COUNT; ++c) {
+                                    path = source;
+                                    path += makeNodeName(NodeTypes::Aggr, a1, pod);
+                                    path += makeNodeName(NodeTypes::Core, c);
+                                    path += makeNodeName(NodeTypes::Aggr, a2, p);
+                                    path += target;
+                                    epi.addPath(path);
+                                }
+                            }
+                        }
+                    }
+                    _edgePairInfos.push_back(epi);
+                }
+            }
+        }
+    }
+
+    // Init tact
     scheduleAt(TACT_S * 1.5, new cMessage("tact")); // 1.5, because at 1. network state is initialized
 }
 
@@ -33,6 +87,17 @@ void Controller::handleMessage(cMessage *msg)
     // Tact
     if (msg->isName("tact") && simTime() < _tactFinishTime) {
         scheduleAt(simTime() + TACT_S, msg);
+
+        // Update path proportions from agent
+        auto aft = getPairsAggrFlowThoughputs();
+        auto pu = getPairsPathUtilizations();
+        auto newProps = _agentConnector.fetchEdgePathProportions(aft, pu);
+        updateEdgeProps(newProps);
+
+        // Reset _edgePairInfos for next update
+        for (auto epi: _edgePairInfos) {
+            epi.reset();
+        }
         return;
     }
 
@@ -55,20 +120,51 @@ void Controller::handleMessage(cMessage *msg)
     if (msg->isName("node-state")) {
         StatePacket* statePkt = (StatePacket*)msg;
 
-        // send to DataController
+        // Update _edgePairInfos
         std::string targetNode = statePkt->getTargetNode();
         std::vector<std::pair<std::string, int>> utilizations;
         for (int i = 0; i < statePkt->getSourceNodesArraySize(); ++i) {
             std::string sourceNode = statePkt->getSourceNodes(i);
             int utilization = statePkt->getNodeUtilizations(i);
-            utilizations.push_back(std::pair<std::string, int>(sourceNode, utilization));
+            for (auto epi: _edgePairInfos) {
+                epi.processUtilization(sourceNode, targetNode, utilization);
+            }
         }
-
-        //_dataCollectorConnector.sendStateFromNode(targetNode, utilizations);
 
         delete msg;
         return;
     }
 
     delete msg;
+}
+
+EdgePairInfo
+Controller::findEdgePairInfo(std::string source, std::string target) {
+    for (auto epi: _edgePairInfos) {
+        if (epi.source == source && epi.target == target)
+            return epi;
+    }
+    throw "No epi found for " + source + ", " + target;
+}
+
+vector<vector<char>>
+Controller::getPairsPathUtilizations() {
+    vector<vector<char>> pairsPathUtilizations;
+    for (int i = 0; i < _edgePairInfos.size(); ++i) {
+        pairsPathUtilizations.push_back(_edgePairInfos[i].pathUtilizations);
+    }
+    return pairsPathUtilizations;
+}
+
+vector<int>
+Controller::getPairsAggrFlowThoughputs() {
+    vector<int> allAft;
+    for (int i = 0; i < _edgePairInfos.size(); ++i) {
+        allAft.push_back(_edgePairInfos[i].aggrFlowThroughput);
+    }
+    return allAft;
+}
+
+void Controller::updateEdgeProps(map<EdgePair, PathProportions> props) {
+    //  ...
 }

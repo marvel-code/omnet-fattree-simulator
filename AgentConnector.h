@@ -28,8 +28,8 @@ public:
 
     map<EdgePair, PathProportions>
     fetchEdgePathProportions(
-            map<EdgePair, int> aggrFlowThroughputs,
-            vector<vector<int>> pathUtilizations
+            vector<int> aggrFlowThroughputs,
+            vector<vector<char>> pathUtilizations
     );
 };
 

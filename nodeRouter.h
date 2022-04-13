@@ -27,7 +27,7 @@ using namespace omnetpp;
 class NodeRouter {
     Node& _node;
     std::map<std::string, std::pair<cGate*, cGate*>> _neighbors; // neighbor node -> cGate
-    std::map<std::string, std::vector<std::vector<std::string>>> _paths; // edge -> paths
+    std::map<std::string, std::vector<std::vector<std::string>>> _paths; // dest edge -> paths
 
     std::map<std::string, TrafficBalancer*> _trafficBalancers; // Destination edge name -> edge traffic router
 

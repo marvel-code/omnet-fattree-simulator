@@ -12,6 +12,7 @@
 #include "utils.h"
 #include "types.h"
 #include <numeric>
+#include <iostream>
 
 using namespace omnetpp;
 
@@ -20,8 +21,8 @@ const int   DC_PORT = 50123;
 
 const int AFT_MSG_LEN = 4 * EDGE_PAIRS;
 const int REWARD_MSG_LEN = 4;
-const int SEND_MSG_LEN = AFT_MSG_LEN + REWARD_MSG_LEN;
 
+const int SEND_MSG_LEN = AFT_MSG_LEN + REWARD_MSG_LEN;
 const int RECV_MSG_LEN = PATH_COUNT_PER_EDGE * EDGE_COUNT;
 
 AgentConnector::AgentConnector() {
@@ -100,16 +101,17 @@ AgentConnector::~AgentConnector() {
 
 map<EdgePair, PathProportions>
 AgentConnector::fetchEdgePathProportions(
-        map<EdgePair, int> aggrFlowThroughputs,
-        vector<vector<int>> pathUtilizations
+        vector<int> aggrFlowThroughputs,
+        vector<vector<char>> pathUtilizations
 ) {
     //
     // Send network state
     //
-    char request[SEND_MSG_LEN];
+    char request[SEND_MSG_LEN + PROPS_COUNT];
     int offset = 0;
 
     // Put aft
+    int i = -1;
     for (int p1 = 0; p1 < POD_COUNT; ++p1) {
         for (int e1 = 0; e1 < EDGE_PER_POD; ++e1) {
             std::string edge1 = makeNodeName(NodeTypes::Edge, e1, p1);
@@ -119,7 +121,7 @@ AgentConnector::fetchEdgePathProportions(
                         continue;
                     std::string edge2 = makeNodeName(NodeTypes::Edge, e2, p2);
                     EdgePair pair = EdgePair(edge1, edge2);
-                    offset += put(request, offset, aggrFlowThroughputs[pair]);
+                    offset += put(request, offset, aggrFlowThroughputs[++i]);
                 }
             }
         }
@@ -127,7 +129,12 @@ AgentConnector::fetchEdgePathProportions(
 
     // Put reward
     double reward = 0;
-    for (auto v: pathUtilizations) {
+    for (int i = 0; i < pathUtilizations.size(); ++i) {
+        auto v = pathUtilizations[i];
+        if (v.size() == 0) {
+            std::cout << std::string("No path utilizations found on ") + std::to_string(i) << std::endl;
+            throw -1;
+        }
         int sum = std::accumulate(v.begin(), v.end(), 0);
         int mean_utilization = sum / v.size();
         int distance_to_mean = 0;
@@ -139,10 +146,18 @@ AgentConnector::fetchEdgePathProportions(
     int intReward = (int)reward;
     offset += put(request, offset, intReward);
 
-    if (offset != SEND_MSG_LEN)
-        throw string("Offset is not SEND_MSG_LEN: ") + to_string(offset) + string(" != ") + to_string(SEND_MSG_LEN);
+    if (offset != SEND_MSG_LEN) {
+        std::cout << string("Offset is not SEND_MSG_LEN: ") + to_string(offset) + string(" != ") + to_string(SEND_MSG_LEN) << std::endl;
+        throw -1;
+    }
 
-    send(_sock, request, SEND_MSG_LEN, 0);
+    for (auto v: pathUtilizations) {
+        for (auto u: v) {
+            request[offset++] = u;
+        }
+    }
+
+    send(_sock, request, SEND_MSG_LEN + PROPS_COUNT, 0);
 
     //
     // Receive proportions

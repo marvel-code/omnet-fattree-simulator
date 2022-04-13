@@ -20,22 +20,72 @@
 #include "AgentConnector.h"
 #include <map>
 #include "types.h"
+#include <string>
+#include <vector>
 
 using namespace omnetpp;
 
-/**
- * TODO - Generated class
- */
+/** Edge ordered pair information */
+struct EdgePairInfo {
+
+    /** Source edge */
+    std::string source;
+    /** Target edge */
+    std::string target;
+
+    /** Paths */
+    std::vector<std::string> paths;
+    /** Path utilizations */
+    std::vector<char> pathUtilizations;
+
+    /** Aggregation flow throughput */
+    int aggrFlowThroughput = 0;
+
+
+    EdgePairInfo(std::string source, std::string target): source{source}, target{target} {}
+
+    int getPathCount() {
+        return paths.size();
+    }
+
+    void addPath(std::string path) {
+        paths.push_back(path);
+        pathUtilizations.push_back(0);
+    }
+
+    void reset() {
+        for (int i = 0; i < pathUtilizations.size(); ++i) {
+            pathUtilizations[i] = 0;
+        }
+        aggrFlowThroughput = 0;
+    }
+
+    void processUtilization(std::string node1, std::string node2, char utilization) {
+        std::string link = node1 + node2;
+        for (int i = 0; i < paths.size(); ++i) {
+            bool hasLink = paths[i].find(link) != std::string::npos;
+            if (hasLink && pathUtilizations[i] < utilization) {
+                pathUtilizations[i] = utilization;
+            }
+        }
+    }
+};
+
 class Controller : public cSimpleModule
 {
     simtime_t _tactFinishTime;
     AgentConnector _agentConnector;
-    std::map<NodePair, char> _linkUtilizations;
-    std::map<EdgePair, int> _aggrFlowThroughputs;
+    std::vector<EdgePairInfo> _edgePairInfos;
 
   protected:
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
+
+    EdgePairInfo findEdgePairInfo(std::string source, std::string target);
+    vector<vector<char>> getPairsPathUtilizations();
+    vector<int> getPairsAggrFlowThoughputs();
+
+    void updateEdgeProps(map<EdgePair, PathProportions> props);
 };
 
 #endif
