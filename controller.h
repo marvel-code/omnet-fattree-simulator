@@ -22,6 +22,7 @@
 #include "types.h"
 #include <string>
 #include <vector>
+#include <iostream>
 
 using namespace omnetpp;
 
@@ -81,7 +82,7 @@ class Controller : public cSimpleModule
     virtual void initialize();
     virtual void handleMessage(cMessage *msg);
 
-    EdgePairInfo findEdgePairInfo(std::string source, std::string target);
+    EdgePairInfo& findEdgePairInfo(const std::string& source, const std::string& target);
     vector<vector<char>> getPairsPathUtilizations();
     vector<int> getPairsAggrFlowThoughputs();
 

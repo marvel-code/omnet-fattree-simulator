@@ -20,9 +20,10 @@ const char* DC_HOST = "127.0.0.1";
 const int   DC_PORT = 50123;
 
 const int AFT_MSG_LEN = 4 * EDGE_PAIRS;
-const int REWARD_MSG_LEN = 4;
+const int REWARD_MSG_LEN = 0;
+const int PAIRSPATHUTILIZATIONS_MSG_LEN = PATH_COUNT;
 
-const int SEND_MSG_LEN = AFT_MSG_LEN + REWARD_MSG_LEN;
+const int SEND_MSG_LEN = AFT_MSG_LEN + REWARD_MSG_LEN + PAIRSPATHUTILIZATIONS_MSG_LEN;
 const int RECV_MSG_LEN = PATH_COUNT_PER_EDGE * EDGE_COUNT;
 
 AgentConnector::AgentConnector() {
@@ -68,30 +69,6 @@ AgentConnector::AgentConnector() {
     }
 
     printf("Connection made sucessfully\n");
-
-//    const char *pBuf = "Request";
-//
-//    printf("Sending request from client\n");
-//    retVal = send(_sock, pBuf, strlen(pBuf), 0);
-//
-//    if(retVal == SOCKET_ERROR)
-//    {
-//        printf("Unable to send\n");
-//        WSACleanup();
-//        throw 4;
-//    }
-
-//    char szResponse[9];
-//    retVal = recv(_sock, szResponse, 9, 0);
-//
-//    if(retVal == SOCKET_ERROR)
-//    {
-//        printf("Unable to recv\n");
-//        WSACleanup();
-//        throw 5;
-//    }
-//
-//    printf("Got the response from server\n%s\n",szResponse);
 }
 
 AgentConnector::~AgentConnector() {
@@ -101,13 +78,14 @@ AgentConnector::~AgentConnector() {
 
 map<EdgePair, PathProportions>
 AgentConnector::fetchEdgePathProportions(
-        vector<int> aggrFlowThroughputs,
-        vector<vector<char>> pathUtilizations
+        const vector<int>& aggrFlowThroughputs,
+        const vector<vector<char>>& pairsPathUtilizations
 ) {
+
     //
     // Send network state
     //
-    char request[SEND_MSG_LEN + PROPS_COUNT];
+    char request[SEND_MSG_LEN];
     int offset = 0;
 
     // Put aft
@@ -128,36 +106,38 @@ AgentConnector::fetchEdgePathProportions(
     }
 
     // Put reward
-    double reward = 0;
-    for (int i = 0; i < pathUtilizations.size(); ++i) {
-        auto v = pathUtilizations[i];
-        if (v.size() == 0) {
-            std::cout << std::string("No path utilizations found on ") + std::to_string(i) << std::endl;
-            throw -1;
+//    double reward = 0;
+//    for (int i = 0; i < pairsPathUtilizations.size(); ++i) {
+//        auto v = pairsPathUtilizations[i];
+//        if (v.size() == 0) {
+//            std::cout << std::string("No path utilizations found on ") + std::to_string(i) << std::endl;
+//            throw -1;
+//        }
+//        int sum = std::accumulate(v.begin(), v.end(), 0);
+//        int mean_utilization = sum / v.size();
+//        int distance_to_mean = 0;
+//        for (auto utilization: v) {
+//            distance_to_mean += abs(utilization - mean_utilization);
+//        }
+//        reward += 1 - 0.01 * distance_to_mean / v.size();
+//    }
+//    int intReward = (int)reward;
+//    offset += put(request, offset, intReward);
+
+    // Put utilizations
+    for (auto v: pairsPathUtilizations) {
+        for (auto u: v) {
+            request[offset++] = u;
         }
-        int sum = std::accumulate(v.begin(), v.end(), 0);
-        int mean_utilization = sum / v.size();
-        int distance_to_mean = 0;
-        for (auto utilization: v) {
-            distance_to_mean += abs(utilization - mean_utilization);
-        }
-        reward += 1 - 0.01 * distance_to_mean / v.size();
     }
-    int intReward = (int)reward;
-    offset += put(request, offset, intReward);
+
 
     if (offset != SEND_MSG_LEN) {
         std::cout << string("Offset is not SEND_MSG_LEN: ") + to_string(offset) + string(" != ") + to_string(SEND_MSG_LEN) << std::endl;
         throw -1;
     }
 
-    for (auto v: pathUtilizations) {
-        for (auto u: v) {
-            request[offset++] = u;
-        }
-    }
-
-    send(_sock, request, SEND_MSG_LEN + PROPS_COUNT, 0);
+    send(_sock, request, SEND_MSG_LEN, 0);
 
     //
     // Receive proportions

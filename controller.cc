@@ -30,6 +30,7 @@ void Controller::initialize()
     for (int pod = 0; pod < POD_COUNT; ++pod) {
         for (int index = 0; index < EDGE_PER_POD; ++index) {
             std::string source = makeNodeName(NodeTypes::Edge, index, pod);
+            // Edge on the other pod (16 for K=4)
             for (int p = 0; p < POD_COUNT; ++p) {
                 for (int e = 0; e < EDGE_PER_POD; ++e) {
                     if (e == index && p == pod)
@@ -37,12 +38,9 @@ void Controller::initialize()
                     std::string target = makeNodeName(NodeTypes::Edge, e, p);
                     EdgePairInfo epi(source, target);
                     std::string path;
-                    if (p == pod) {
-                        // Edge on the same pod (10 for K=4)
+                    if (p != pod) {
                         for (int a1 = 0; a1 < AGGR_PER_POD; ++a1) {
                             for (int a2 = 0; a2 < AGGR_PER_POD; ++a2) {
-                                if (a1 == a2)
-                                    continue;
                                 for (int c = 0; c < CORE_COUNT; ++c) {
                                     path = source;
                                     path += makeNodeName(NodeTypes::Aggr, a1, pod);
@@ -52,28 +50,40 @@ void Controller::initialize()
                                     epi.addPath(path);
                                 }
                             }
+                        }
+                        _edgePairInfos.push_back(epi);
+                    }
+                }
+            }
+            // Same pod (10 for K=4)
+            int p = pod;
+            for (int e = 0; e < EDGE_PER_POD; ++e) {
+                if (e == index)
+                    continue;
+                std::string target = makeNodeName(NodeTypes::Edge, e, p);
+                EdgePairInfo epi(source, target);
+                std::string path;
+                for (int a1 = 0; a1 < AGGR_PER_POD; ++a1) {
+                    // Through aggr
+                    path = source;
+                    path += makeNodeName(NodeTypes::Aggr, a1, p);
+                    path += target;
+                    epi.addPath(path);
+                    // Through core
+                    for (int a2 = 0; a2 < AGGR_PER_POD; ++a2) {
+                        if (a1 == a2)
+                            continue;
+                        for (int c = 0; c < CORE_COUNT; ++c) {
                             path = source;
                             path += makeNodeName(NodeTypes::Aggr, a1, pod);
+                            path += makeNodeName(NodeTypes::Core, c);
+                            path += makeNodeName(NodeTypes::Aggr, a2, p);
                             path += target;
                             epi.addPath(path);
                         }
-                    } else {
-                        // Edge on the other pod (16 for K=4)
-                        for (int a1 = 0; a1 < AGGR_PER_POD; ++a1) {
-                            for (int a2 = 0; a2 < AGGR_PER_POD; ++a2) {
-                                for (int c = 0; c < CORE_COUNT; ++c) {
-                                    path = source;
-                                    path += makeNodeName(NodeTypes::Aggr, a1, pod);
-                                    path += makeNodeName(NodeTypes::Core, c);
-                                    path += makeNodeName(NodeTypes::Aggr, a2, p);
-                                    path += target;
-                                    epi.addPath(path);
-                                }
-                            }
-                        }
                     }
-                    _edgePairInfos.push_back(epi);
                 }
+                _edgePairInfos.push_back(epi);
             }
         }
     }
@@ -126,7 +136,7 @@ void Controller::handleMessage(cMessage *msg)
         for (int i = 0; i < statePkt->getSourceNodesArraySize(); ++i) {
             std::string sourceNode = statePkt->getSourceNodes(i);
             int utilization = statePkt->getNodeUtilizations(i);
-            for (auto epi: _edgePairInfos) {
+            for (EdgePairInfo& epi: _edgePairInfos) {
                 epi.processUtilization(sourceNode, targetNode, utilization);
             }
         }
@@ -138,9 +148,9 @@ void Controller::handleMessage(cMessage *msg)
     delete msg;
 }
 
-EdgePairInfo
-Controller::findEdgePairInfo(std::string source, std::string target) {
-    for (auto epi: _edgePairInfos) {
+EdgePairInfo&
+Controller::findEdgePairInfo(const std::string& source, const std::string& target) {
+    for (EdgePairInfo& epi: _edgePairInfos) {
         if (epi.source == source && epi.target == target)
             return epi;
     }
@@ -160,7 +170,7 @@ vector<int>
 Controller::getPairsAggrFlowThoughputs() {
     vector<int> allAft;
     for (int i = 0; i < _edgePairInfos.size(); ++i) {
-        allAft.push_back(_edgePairInfos[i].aggrFlowThroughput);
+        allAft.push_back(std::rand() % CAPACITY_BPS);
     }
     return allAft;
 }
